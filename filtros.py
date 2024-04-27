@@ -94,7 +94,7 @@ class FiltrosAnidados(Estimador2):
 
     # ============================= Métodos del filtro de capacidad =============================
     # Función que implementa el filtro para la capacidad en base al estimador
-    def get_factor(self, soc):
+    def get_factor(self, soc, method=True):
         # Obtenermos el SSR y el ASSR
         ssr = max(soc) - min(soc)
         assr = (max(soc) + min(soc)) / 2
@@ -105,8 +105,12 @@ class FiltrosAnidados(Estimador2):
             np.array([[assr, ssr, self.modelo_th.parameters["degradation_percentage"]]])
         )
         eta = (self.modelo_th.parameters["degradation_percentage"]) ** (
-            1 / self.modelo_th.parameters["life_cycles"]
-        )
+                1 / self.modelo_th.parameters["life_cycles"])
+        if method:
+            D = ssr/100
+            D_ = D**0.795
+            eta = eta**D_
+            
         return knn_factor * eta
         # return knn_factor
 
