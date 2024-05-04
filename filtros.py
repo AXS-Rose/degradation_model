@@ -40,6 +40,10 @@ class FiltrosAnidados(Estimador2):
         self.sigma_capacidad = sigma_capacidad
         self.Q_inst = self.modelo_th.parameters["Qmax"]
 
+        if self.modelo_th.parameters["adapt_cell"]:
+            self.modelo_th.adapt_degradation()
+            print("modelo de degradación adaptado a nueva celda")
+
         # Forzamnos el setup de knn
         self.modelo_th.setup_knn()
 
@@ -100,7 +104,6 @@ class FiltrosAnidados(Estimador2):
         assr = (max(soc) + min(soc)) / 2
 
         # Calculamos el valor de eta
-
         knn_factor = self.modelo_th.knn.predict(
             np.array([[assr, ssr, self.modelo_th.parameters["degradation_percentage"]]])
         )

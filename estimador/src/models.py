@@ -29,6 +29,7 @@ class ThModel_Extended(PrognosticsModel):
         "gamma": 0.556,
         "degradation_percentage": 0.8,  # Por ejemplo, 80% de degradación
         "life_cycles": 1000,  # Por ejemplo, 1000 ciclos de vida
+        "adapt_cell" : True, # True si se aplica la corrección para nueva celda
         "Factor_R_SOH0": 283.71948548 / 1000,
         "Factor_R_SOH1": -572.76721458 / 1000,
         "Factor_R_SOH2": 320.37195027 / 1000,
@@ -62,6 +63,11 @@ class ThModel_Extended(PrognosticsModel):
         super().initialize(
             *args, **kwargs
         )  # Llama a la inicialización de la clase base
+
+        # if self.default_parameters["adapt_cell"]:
+        #     self.adapt_degradation()
+        #     print("modelo de degradación adapatado a nueva celda")
+
         self.setup_knn()  # Configura el modelo k-NN
         # Estado inicial
         initial_state = {
@@ -200,6 +206,28 @@ class ThModel_Extended(PrognosticsModel):
     def calculate_Cap(self, etak, Cap_prev):
         Ck = etak * Cap_prev
         return Ck
+
+    def adapt_degradation(self):
+        # degradation_percentage = self.parameters["degradation_percentage"]
+        life_cycles = self.parameters["life_cycles"]
+        life_cycles_0 = 4000
+
+        # obtenemos el sr del caso nominal
+        # sr_0 = next(iter(self.parameters["degradation_data"].items()))[0]
+        # sr_range_0 = [float(x) for x in sr_0.split("-")]
+        # sr_numeric_0 = sr_range_0[0] - sr_range_0[1]
+
+        for sr, factors in self.parameters["degradation_data"].items():
+                    # sr_range = [float(x) for x in sr.split("-")]
+                    # sr_numeric = sr_range[0] - sr_range[1]  # SR
+                    # first normalize to nominal cycles -> then adapt to new cell
+                    # eta_k_0 = factors[1]*degradation_percentage**(1/life_cycles_0)
+                    # normalized_factor = factors[1]*(eta_k_0**((sr_numeric_0-sr_numeric)/sr_numeric))
+                    # new_factor = normalized_factor**(life_cycles_0/life_cycles)
+                    new_factor = factors[1]**(life_cycles_0/life_cycles)
+                    # Update the factor in factors[1]
+                    factors[1] = new_factor
+        self.parameters["degradation_data"]
 
     def setup_knn(self):
         # Preparar los datos para el modelo k-NN
