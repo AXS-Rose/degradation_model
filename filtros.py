@@ -1,4 +1,5 @@
 from estimador import Estimador2, Estimador_cuant
+from estimador import *
 import numpy as np
 
 
@@ -40,15 +41,12 @@ class FiltrosAnidados(Estimador2):
         self.sigma_capacidad = sigma_capacidad
         self.Q_inst = self.modelo_th.parameters["Qmax"]
 
-        if self.modelo_th.parameters["adapt_cell"]:
-            self.modelo_th.adapt_degradation()
-            print("modelo de degradación adaptado a nueva celda")
-
         # Forzamnos el setup de knn
         self.modelo_th.setup_knn()
 
     # ============================= Métodos del filtro de autonomía =============================
     # Función que implementa el filtro de partículas pra el soc
+
     def filtrar_soc(
         self,
         particulas: np.array,
@@ -98,10 +96,11 @@ class FiltrosAnidados(Estimador2):
 
     # ============================= Métodos del filtro de capacidad =============================
     # Función que implementa el filtro para la capacidad en base al estimador
-    def get_factor(self, soc, method=True):
+    def get_factor(self, soc):
         # Obtenermos el SSR y el ASSR
         ssr = max(soc) - min(soc)
         assr = (max(soc) + min(soc)) / 2
+        sr_numeric_0 = 100
 
         # Calculamos el valor de eta
         knn_factor = self.modelo_th.knn.predict(
@@ -109,12 +108,11 @@ class FiltrosAnidados(Estimador2):
         )
         eta = (self.modelo_th.parameters["degradation_percentage"]) ** (
                 1 / self.modelo_th.parameters["life_cycles"])
-        if method:
-            D = ssr/100
-            D_ = D**0.795
-            eta = eta**D_
-            
-        return knn_factor * eta
+        
+        etak = knn_factor * eta
+        etak_unnml = etak**(ssr/sr_numeric_0)
+
+        return etak_unnml
         # return knn_factor
 
     def filtrar_q(
@@ -156,10 +154,6 @@ class FiltrosAnidados(Estimador2):
 
         # Retornamos las partículas y sus pesos
         return particulas, pesos, capacidad_ponderada
-
-
-# ==============================================
-
 
 class FiltrosAnidadosCuant(Estimador_cuant):
     def __init__(

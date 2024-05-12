@@ -1,3 +1,4 @@
+from .src.newcell_functions import *
 from .src import (
     ThModel_Extended,
     Modelo_Th_cuant_full,

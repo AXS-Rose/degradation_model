@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.preprocessing import KBinsDiscretizer
+from .newcell_functions import *
+
 
 
 class ThModel_Extended(PrognosticsModel):
@@ -29,24 +31,24 @@ class ThModel_Extended(PrognosticsModel):
         "gamma": 0.556,
         "degradation_percentage": 0.8,  # Por ejemplo, 80% de degradación
         "life_cycles": 1000,  # Por ejemplo, 1000 ciclos de vida
-        "adapt_cell" : True, # True si se aplica la corrección para nueva celda
+        "adapt_cell" : False, # True si se aplica la corrección para nueva celda
         "Factor_R_SOH0": 283.71948548 / 1000,
         "Factor_R_SOH1": -572.76721458 / 1000,
         "Factor_R_SOH2": 320.37195027 / 1000,
         "Factor_R_SOH3": 21.40399288 / 1000,
         # Datos de degradación
         "degradation_data": {
-            "100-0": [1.0, 1.0, 1.0],
-            "100-25": [1.000003, 1.00000266, 1.00000193],
-            "75-0": [1.000024, 1.0000186, 1.00001354],
-            "100-50": [0.999989, 0.99999203, 0.9999942],
-            "75-25": [1.000019, 1.00001521, 1.00001108],
-            "50-0": [1.000037, 1.00002874, 1.00002093],
-            "100-75": [1.000027, 1.00002146, 1.00001563],
-            "75-50": [1.000011, 1.00000881, 1.00000642],
-            "62.5-37.5": [1.000008, 1.00000620, 1.00000451],
-            "50-25": [1.000043, 1.00003347, 1.00002438],
-            "25-0": [1.000054, 1.00004184, 1.00003047],
+            "100-0":        [1.0],
+            "100-25":       [1.00000266],
+            "75-0":         [1.0000186],
+            "100-50":       [0.99999203],
+            "75-25":        [1.00001521],
+            "50-0":         [1.00002874],
+            "100-75":       [1.00002146],
+            "75-50":        [1.00000881],
+            "62.5-37.5":    [1.00000620],
+            "50-25":        [1.00003347],
+            "25-0":         [1.00004184],
         },
         "x0": {  # cond iniciales
             "soc": 1,
@@ -134,27 +136,6 @@ class ThModel_Extended(PrognosticsModel):
                 False
             ), "Hubo un error con la inversa....\nHint: Asegurate de haber fiteado los parámetros con self.fit_inverse()"
 
-    # def calculate_R(self, soc_op, Ck):
-    #     # Cálculo original de la resistencia en función del SoC
-    #     A = self.parameters["A_Rint"]
-    #     B = self.parameters["B_Rint"]
-    #     C = self.parameters["C_Rint"]
-    #     D = self.parameters["D_Rint"]
-    #     factor = self.parameters["Factor_Rint"]
-    #     bias = self.parameters["Bias_Rint"]
-
-    #     R_soc = factor * (A * soc_op**3 + B * soc_op**2 + C * soc_op + D) + bias
-
-    #     soh = Ck / self.parameters["Qmax"]
-
-    #     F0, F1, F2, F3 = (self.parameters[f"Factor_R_SOH{i}"] for i in range(4))
-
-    #     derivative_soh = F1 + 2 * F2 * soh + 3 * F3 * soh**2
-
-    #     R_adjusted = R_soc * (1 - derivative_soh)
-
-    #     return R_adjusted
-
     def calculate_R(self, soc_op):
         A = self.parameters["A_Rint"]
         B = self.parameters["B_Rint"]
@@ -209,25 +190,14 @@ class ThModel_Extended(PrognosticsModel):
 
     def adapt_degradation(self):
         # degradation_percentage = self.parameters["degradation_percentage"]
-        life_cycles = self.parameters["life_cycles"]
-        life_cycles_0 = 4000
-
-        # obtenemos el sr del caso nominal
-        # sr_0 = next(iter(self.parameters["degradation_data"].items()))[0]
-        # sr_range_0 = [float(x) for x in sr_0.split("-")]
-        # sr_numeric_0 = sr_range_0[0] - sr_range_0[1]
-
-        for sr, factors in self.parameters["degradation_data"].items():
-                    # sr_range = [float(x) for x in sr.split("-")]
-                    # sr_numeric = sr_range[0] - sr_range[1]  # SR
-                    # first normalize to nominal cycles -> then adapt to new cell
-                    # eta_k_0 = factors[1]*degradation_percentage**(1/life_cycles_0)
-                    # normalized_factor = factors[1]*(eta_k_0**((sr_numeric_0-sr_numeric)/sr_numeric))
-                    # new_factor = normalized_factor**(life_cycles_0/life_cycles)
-                    new_factor = factors[1]**(life_cycles_0/life_cycles)
-                    # Update the factor in factors[1]
-                    factors[1] = new_factor
-        self.parameters["degradation_data"]
+        new_cycles = self.parameters["life_cycles"]
+        new_EOL = self.parameters["degradation_percentage"]
+        cycles_0 = 4000
+        EOL_0 = 0.8
+        eta_0 = EOL_0**(1/cycles_0)
+        
+        nml_factors(self.parameters["degradation_data"],eta_0)
+        adap_factors(self.parameters["degradation_data"],new_cycles,cycles_0,new_EOL)
 
     def setup_knn(self):
         # Preparar los datos para el modelo k-NN
