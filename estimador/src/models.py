@@ -198,7 +198,8 @@ class ThModel_Extended(PrognosticsModel):
         
         nml_factors(self.parameters["degradation_data"],eta_0)
         adap_factors(self.parameters["degradation_data"],new_cycles,cycles_0,new_EOL)
-
+        print("celda: ",self, "adaptada")
+        print(self.parameters["degradation_data"])
     def setup_knn(self):
         # Preparar los datos para el modelo k-NN
         X = []
@@ -219,6 +220,8 @@ class ThModel_Extended(PrognosticsModel):
         # Entrenar el modelo k-NN
         self.knn = KNeighborsRegressor(n_neighbors=3, weights="distance")
         self.knn.fit(X, y)  # Entrenar el modelo k-NN
+
+        print("modelo de celda seteado. Tabla de degradación: ",self.parameters["degradation_data"])
 
     def calculate_eta(self):
         # Calcular eta basado en la fórmula
