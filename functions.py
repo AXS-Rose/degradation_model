@@ -1,15 +1,19 @@
 def eta_subciclo(extremos, modelo):
+    # funcion que obtiene el eta en base a "modelo" para los "extremos" dados
+    # extremos tiene que tener largo par para generar las tuplas del eta
     ind = 0
     eta = 1
     while ind < len(extremos):
         subciclo=[extremos[ind],extremos[ind+1]]
-        eta_k = modelo.get_factor(subciclo)
+        eta_k = modelo.get_factor(subciclo,unnml=True) # se obtiene el factor de los extremos dados
         print("calculo para subciclo: ",subciclo, "eta = ",eta_k)
         eta *= eta_k 
         ind += 2
     return eta
 
 def extremos_soc(soc):
+    # funcion para extraer las min y max locales de un perfil de soc en base al step_ind
+    # soc es un df de columnas soc y step ind
     extremos = []
     soc_val = soc.SoC.values
     step_ind_val = soc.step_ind.values

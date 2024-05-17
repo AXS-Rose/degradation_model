@@ -96,10 +96,12 @@ class FiltrosAnidados(Estimador2):
 
     # ============================= Métodos del filtro de capacidad =============================
     # Función que implementa el filtro para la capacidad en base al estimador
-    def get_factor(self, soc):
+    def get_factor(self, soc, unnml = False):
         # Obtenermos el SSR y el ASSR
         ssr = max(soc) - min(soc)
-        assr = (max(soc) + min(soc)) / 2
+        # assr = (max(soc) + min(soc)) / 2
+        assr = np.mean(soc)
+
         sr_numeric_0 = 100
 
         # Calculamos el valor de eta
@@ -110,11 +112,13 @@ class FiltrosAnidados(Estimador2):
                 1 / self.modelo_th.parameters["life_cycles"])
         
         etak = knn_factor * eta
-        etak_unnml = etak**(ssr/sr_numeric_0)
-        print("eta0: ",eta," etak: ",etak," normalizado a: ",etak_unnml," para subciclo: ",soc)
+        if unnml:
+            etak = etak**(ssr/sr_numeric_0)
+            print("etak desnormalizado a:",etak)
+        else:
+            print("eta normal: ",etak," aplicado")
 
-        return etak_unnml
-        # return knn_factor
+        return etak
 
     def filtrar_q(
         self,
