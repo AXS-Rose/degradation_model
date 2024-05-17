@@ -1,11 +1,11 @@
-def eta_subciclo(extremos, modelo):
+def eta_subciclo(extremos, modelo,unnml = True):
     # funcion que obtiene el eta en base a "modelo" para los "extremos" dados
     # extremos tiene que tener largo par para generar las tuplas del eta
     ind = 0
     eta = 1
     while ind < len(extremos):
         subciclo=[extremos[ind],extremos[ind+1]]
-        eta_k = modelo.get_factor(subciclo,unnml=True) # se obtiene el factor de los extremos dados
+        eta_k = modelo.get_factor(subciclo,unnml) # se obtiene el factor de los extremos dados
         print("calculo para subciclo: ",subciclo, "eta = ",eta_k)
         eta *= eta_k 
         ind += 2
