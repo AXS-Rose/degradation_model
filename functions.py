@@ -30,3 +30,19 @@ def extremos_soc(soc):
     # agregamos el punto final (si o si mínimo)
     extremos.append(soc_val[-1])
     return extremos
+
+def degradation_cycle(modelo,cell,SR,cycle_values):
+    # asumimos que sabemos el SR de la celda
+    cycles = cycle_values[cell]
+    # calculamos el eta para ese ciclo
+    etak = eta_subciclo(SR, modelo,False)
+    EOL = etak**cycles
+    return EOL
+
+def generate_soc_profile(max_soc,min_soc,cycles): 
+    subcycle = list(range(min_soc,max_soc+1))
+    subcycle.reverse()
+    soc_profile = []
+    for i in range(cycles):
+        soc_profile += subcycle
+    return soc_profile
