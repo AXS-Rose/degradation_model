@@ -200,6 +200,13 @@ class ThModel_Extended(PrognosticsModel):
         adap_factors(self.parameters["degradation_data"],new_cycles,cycles_0,new_EOL)
         print("celda: ",self, "adaptada")
         print(self.parameters["degradation_data"])
+    def linear_degradation(self):
+        cycles_0 = 4000
+        EOL_0 = 0.8
+        linear_factors(self.parameters["degradation_data"],EOL_0,cycles_0)
+        print("celda: ",self, "linealizada")
+        print(self.parameters["degradation_data"])
+
     def setup_knn(self):
         # Preparar los datos para el modelo k-NN
         X = []

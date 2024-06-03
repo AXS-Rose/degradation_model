@@ -76,3 +76,26 @@ def unnml_factors(df,new_cycles,new_EOL,factors_column,cycles_column):
     df[factors_column] = unnoml_adapted_factors
     df[cycles_column] = unnoml_adapted_cycles
     return df
+
+def linear_factors(factor_dict,EOL_0,cycles_0):
+    eta_0 = EOL_0**(1/cycles_0)
+    sr_numeric_0 = 100
+    for sr_k, factors in factor_dict.items():
+        # obtenemos el sr de cada caso
+        sr_range = [float(x) for x in sr_k.split("-")]
+        sr_numeric = sr_range[0] - sr_range[1]
+        lin_cycles = cycles_0*sr_numeric_0/sr_numeric
+        # normlizamos el factor
+        eta_k = EOL_0**(1/lin_cycles)
+        new_factor = eta_k/eta_0
+        # eq_cycle = 1/(log_a(EOL_0,eta_k**(sr_numeric_0/sr_numeric)))
+        ## actualizamos los nuevos valores
+        # eq_cycles.append(eq_cycle)
+        # normal_factors.append(new_factor)
+        factors[0] = new_factor
+
+    # factors_column = factors_column + "_nml"
+    # cycles_column = cycles_column + "_nml"
+        
+    # df[factors_column] = normal_factors
+    # df[cycles_column] = eq_cycles
