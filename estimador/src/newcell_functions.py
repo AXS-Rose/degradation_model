@@ -99,3 +99,13 @@ def linear_factors(factor_dict,EOL_0,cycles_0):
         
     # df[factors_column] = normal_factors
     # df[cycles_column] = eq_cycles
+
+def temp_factor(temp):
+    # definimos los coeficientes ya fiteados
+    coef = np.array([-1.25736777e-11,  4.79001576e-10,  5.01975901e-08,  5.04209738e-07,
+              -3.61735311e-04,  1.12614410e-02,  1.02131291e+00])
+    # creamos la funcion generadora de factores por temperatura
+    polynomial = np.poly1d(coef)
+    # Calculamos el factor ponderador por temperatura
+    factor = polynomial(temp)
+    return factor
