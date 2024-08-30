@@ -1,6 +1,7 @@
 from estimador import Estimador2_aramis,Estimador2_new, Estimador_cuant
 from estimador import *
 import numpy as np
+from scipy.stats import gaussian_kde
 
 
 class FiltrosAnidados_aramis(Estimador2_aramis):
@@ -193,6 +194,7 @@ class FiltrosAnidados_new(Estimador2_new):
 
         # Forzamnos el setup de knn
         self.modelo_th.setup_knn()
+        self.set_kde()
 
     # ============================= Métodos del filtro de autonomía =============================
     # Función que implementa el filtro de partículas pra el soc
@@ -246,6 +248,15 @@ class FiltrosAnidados_new(Estimador2_new):
 
     # ============================= Métodos del filtro de capacidad =============================
     # Función que implementa el filtro para la capacidad en base al estimador
+    def set_kde(self):
+        path = "C:/Users/Bruno/OneDrive - Universidad de Chile/BGMG/CASE/git_repositories/degradation_model/uncertainty_characterization/eta_values_sorted.csv"
+        eta_values = pd.read_csv(path,delimiter=',',header=None)
+        eta_values = eta_values.values.flatten()
+        self.kde = gaussian_kde(eta_values)
+        print("KDE es been setted")
+        # return(kde)
+
+        
     def get_factor(self, soc, temp):
         # Obtenermos el SSR y el ASSR
         ssr = max(soc) - min(soc)
@@ -264,9 +275,10 @@ class FiltrosAnidados_new(Estimador2_new):
         t_factor = temp_factor(temp)
         cycles_k_ = cycles_k * t_factor
 
-        # definimos el eta con incertidumbre        
-        etak = 0.8**(1/cycles_k_) + np.random.normal(0,0.00183979)
-
+        # definimos el eta con incertidumbre
+        noise = self.kde.resample(1)[0][0] - 0.999161393145505
+        etak = 0.8**(1/cycles_k_) + noise
+        etak = np.clip(etak,0.9882437541053815,1)
         return etak
 
     def filtrar_q(
